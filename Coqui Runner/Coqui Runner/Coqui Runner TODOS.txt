@@ -1,0 +1,11 @@
+Rename platformdestroyer to objectdestroyer
+Add a coin system on playerprefs for buying costuems and levels
+Add a main menu
+Add a restart button
+Add more levels
+Add sounds and music
+Add credits
+Powerups
+Add reset button to reset coins, and highscore and levels and costumes bought
+
+https://www.freesound.org/people/dashatron/sounds/191524/

@@ -6,21 +6,96 @@ public class PlatformGenerator : MonoBehaviour {
 
     public GameObject thePlatform;
     public Transform generationPoint;
-    public float distanceBetween;
 
+    public float distanceBetweenMin;
+    public float distanceBetweenMax;
+
+    private float distanceBetween;
     private float platformWidth;
+
+    // public GameObject[] thePlatforms;
+    private int platformSelector;
+    private float[] platformWidths;
+
+    public ObjectPooler[] theObjectPools;
+
+    private float minHeight;
+    public Transform maxHeightPoint;
+    private float maxHeight;
+    public float maxHeightChange;
+    private float heightChange;
+
+    private CoinGenerator theCoinGenerator;
+    public float randomCoinThreshold;
+
+    public float powerupHeight;
+    public ObjectPooler powerupPool;
+    public float powerupThreshold;
 
 	// Use this for initialization
 	void Start () {
-        platformWidth = thePlatform.GetComponent<BoxCollider2D>().size.x;
+        // platformWidth = thePlatform.GetComponent<BoxCollider2D>().size.x;
+        platformWidths = new float[theObjectPools.Length];
+
+        for(int i = 0; i < theObjectPools.Length; i++)
+        {
+            platformWidths[i] = theObjectPools[i].pooledObject.GetComponent<BoxCollider2D>().size.x;
+        }
+
+        minHeight = transform.position.y;
+        maxHeight = maxHeightPoint.position.y;
+
+        theCoinGenerator = FindObjectOfType<CoinGenerator>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if(transform.position.x < generationPoint.position.x)
         {
-            transform.position = new Vector3(transform.position.x + platformWidth + distanceBetween, transform.position.y, transform.position.z);
-            Instantiate(thePlatform, transform.position, transform.rotation);
+            distanceBetween = Random.Range(distanceBetweenMin, distanceBetweenMax);
+
+            platformSelector = Random.Range(0, theObjectPools.Length);
+
+            heightChange = transform.position.y + Random.Range(maxHeightChange, -maxHeightChange);
+            
+            if(heightChange > maxHeight)
+            {
+                heightChange = maxHeight;
+            } else if(heightChange < minHeight)
+            {
+                heightChange = minHeight;
+            }
+
+            if(Random.Range(0f, 100f) < powerupThreshold)
+            {
+                GameObject newPowerup = powerupPool.getPooledObject();
+
+                newPowerup.transform.position = transform.position + new Vector3(distanceBetween / 2f, powerupHeight, Random.Range(powerupHeight / 2f, powerupHeight));
+
+                newPowerup.SetActive(true);
+            }
+
+            transform.position = new Vector3(transform.position.x + (platformWidths[platformSelector] / 2f) + distanceBetween, heightChange, transform.position.z);
+
+            // Instantiate(/* thePlatform */ theObjectPools[platformSelector], transform.position, transform.rotation);
+
+            GameObject newPlatform = theObjectPools[platformSelector].getPooledObject();
+
+            newPlatform.transform.position = transform.position;
+            newPlatform.transform.rotation = transform.rotation;
+            newPlatform.SetActive(true);
+
+            if(Random.Range(0f, 100f) < randomCoinThreshold)
+            {
+                float coinXPosition = Random.Range(-(platformWidths[platformSelector] / 2f + 1f), (platformWidths[platformSelector] / 2f - 1f));
+                //Vector3 coinPosition = new Vector3(coinXPosition, 0f, 0f);
+
+                theCoinGenerator.SpawnCoins(new Vector3(transform.position.x, transform.position.y + 1f, transform.position.z), platformWidths[platformSelector]);
+            }     
+
+            transform.position = new Vector3(transform.position.x + (platformWidths[platformSelector] / 2f), transform.position.y, transform.position.z);
+
         }
 	}
+
 }
